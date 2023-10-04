@@ -1,4 +1,4 @@
+// This is a sample rule that will be executed.
 module.exports = function (callback) {
-    console.log('rule-three executed');
     callback (null,'rule-three executed response');
 };

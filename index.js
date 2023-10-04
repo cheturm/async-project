@@ -1,37 +1,53 @@
+import express from 'express';
+import async from 'async';
+import mongoose from 'mongoose';
+import bodyParser from 'body-parser';
+import routes from './routes/mad-route';
 
-const express = require('express')
-const async = require('async')
 const app = express()
 
-app.post('/test', (req, res) => {
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
-    console.log('req.body', req.body);
+
+// mongoose connection
+mongoose.Promise = global.Promise;
+mongoose.connect('mongodb://localhost/MADEngine', { useNewUrlParser: true });
+// mongoose.connect('mongodb://localhost/MADEngine', { useNewUrlParser: true }, function (err) {
+    routes(app);
+
+// app.post('/rules', function (req, res, next) {
+//    Rules.Rules(req,res,next);
+// });
+
+app.post('/test', (req, res) => {
+    console.log(req.body);
+// Todo receive rule list from client
     var ruleList = ["rule-one", "rule-two", "rule-three"]
-    console.log(getRule(ruleList));
     function getRule(ruleName) {
         var x = [];
         ruleName.forEach(element => {
-            console.log('./rules/' + element + '.js')
             x.push(require('./rules/' + element + '.js'));
-            console.log(x);
         })
         return x;
     }
+
+
+
+    //  Running all rules in parallel
     async.parallel(getRule(ruleList), (err, result) => {
         if (err) {
+            // Todo handle error
             return res.status(500).send(err)
         }
+        // Todo handle success
         return res.send(result)
     })
-    // async.waterfall([], (err, result) => {
+})
 
-    //     if (err) {
-    //         return res.status(500).send(err)
-    //     }
-
-    //     return res.send(result)
-    // })
-    // res.send("I ran all the rules");
+app.post('/run-series',(req,res,next)=>{
+    console.log(req.body);
+    return res.json(req.body);
 })
 
 app.listen(3000, () => {
